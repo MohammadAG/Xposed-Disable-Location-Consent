@@ -1,5 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">Disable Location Consent</string>
-
+    <string name="app_description">Disables location consent dialog</string>
 </resources>
