@@ -20,7 +20,7 @@ public class DisableLocationConsent implements IXposedHookLoadPackage {
 				XposedHelpers.findAndHookMethod("com.google.android.location.network.NetworkLocationService", lpparam.classLoader, "a", Context.class, new XC_MethodReplacement() {
 					@Override
 					protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
-						Context context = (Context)param.args[0];
+						Context context = (Context) param.args[0];
 						Cursor cursor = null;
 						int networkLocationOptIn = 0;
 						try {
@@ -36,24 +36,26 @@ public class DisableLocationConsent implements IXposedHookLoadPackage {
 							if (cursor != null) {
 								cursor.close();
 							}
+
 							if (networkLocationOptIn == 0) {
 								XposedHelpers.callStaticMethod(NetworkLocationService, "a", context, true);
-							}
-							
+							}			
 						}
 						return null;
 					}
 				});
 			}
-		}
-		// Android 4.3.x (Jelly Bean) or lower
-		else if (android.os.Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+		} else if (android.os.Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR2) {
 			if (lpparam.packageName.equals("com.google.android.location")) {
 				final Class<?> NetworkLocationProvider = XposedHelpers.findClass("com.google.android.location.NetworkLocationProvider", lpparam.classLoader);
 				XposedHelpers.findAndHookMethod("com.google.android.location.NetworkLocationProvider", lpparam.classLoader, "applySettings", new XC_MethodReplacement() {
 					@Override
 					protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
-						Context context = (Context)XposedHelpers.getStaticObjectField(param.thisObject.getClass(), "context");
+						Context context = (Context) XposedHelpers.getStaticObjectField(param.thisObject.getClass(), "context");
+						if (context == null) {
+							return null;
+						}
+
 						Cursor cursor = null;
 						int networkLocationOptIn = 0;
 						try {
@@ -61,19 +63,17 @@ public class DisableLocationConsent implements IXposedHookLoadPackage {
 							if (cursor != null && cursor.moveToNext()) {
 								networkLocationOptIn = cursor.getInt(0);
 							}
-						}
-						catch (Exception e) {
+						} catch (Exception e) {
 							return null;
-						}
-						finally {
+						} finally {
 							if (cursor != null) {
 								cursor.close();
 							}
+							
 							if (networkLocationOptIn == 0) {
 								Object NetworkLocationProviderInstance = XposedHelpers.callStaticMethod(NetworkLocationProvider, "getInstance");
 								XposedHelpers.callMethod(NetworkLocationProviderInstance, "userConfirmedEnable", true);
-							}
-							
+							}			
 						}
 						return null;
 					}
